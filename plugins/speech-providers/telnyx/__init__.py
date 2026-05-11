@@ -53,12 +53,12 @@ TELNYX_FALLBACK_VOICES = (
     # NaturalHD — premium, refined prosody
     "Telnyx.NaturalHD.astra",
     "Telnyx.NaturalHD.luna",
-    "Telnyx.NaturalHD.andersen_johan",
     "Telnyx.NaturalHD.orion",
     "Telnyx.NaturalHD.celeste",
     "Telnyx.NaturalHD.bond",
-    "Telnyx.NaturalHD.constance",
-    "Telnyx.NaturalHD.iris",
+    "Telnyx.NaturalHD.andromeda",
+    "Telnyx.NaturalHD.estelle",
+    "Telnyx.NaturalHD.baldur",
     # KokoroTTS — budget-friendly, high-volume
     "Telnyx.KokoroTTS.af_alloy",
     "Telnyx.KokoroTTS.af_bella",

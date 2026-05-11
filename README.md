@@ -98,12 +98,12 @@ hermes tts --provider telnyx-voice --voice Telnyx.KokoroTTS.af_alloy "Budget-fri
 |----------|--------|-------------|
 | `Telnyx.NaturalHD.astra` | NaturalHD | Female, warm and clear (default) |
 | `Telnyx.NaturalHD.luna` | NaturalHD | Female, soft and calm |
-| `Telnyx.NaturalHD.andersen_johan` | NaturalHD | Male, professional |
 | `Telnyx.NaturalHD.orion` | NaturalHD | Male, deep and authoritative |
 | `Telnyx.NaturalHD.celeste` | NaturalHD | Female, clear |
 | `Telnyx.NaturalHD.bond` | NaturalHD | Male, confident |
-| `Telnyx.NaturalHD.constance` | NaturalHD | Female, confident |
-| `Telnyx.NaturalHD.iris` | NaturalHD | Female, friendly and bright |
+| `Telnyx.NaturalHD.andromeda` | NaturalHD | Female, expressive |
+| `Telnyx.NaturalHD.estelle` | NaturalHD | Female, warm |
+| `Telnyx.NaturalHD.baldur` | NaturalHD | Male, strong |
 | `Telnyx.KokoroTTS.af_alloy` | KokoroTTS | Female, budget |
 | `Telnyx.KokoroTTS.af_bella` | KokoroTTS | Female alternative |
 | `Telnyx.KokoroTTS.am_adam` | KokoroTTS | Male, budget |

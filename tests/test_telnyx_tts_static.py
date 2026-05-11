@@ -39,6 +39,7 @@ def test_fallback_voices_contain_expected_entries():
     assert voices[0] == "Telnyx.NaturalHD.astra"
     assert "Telnyx.NaturalHD.luna" in voices
     assert "Telnyx.NaturalHD.orion" in voices
+    assert "Telnyx.NaturalHD.andromeda" in voices
     assert "Telnyx.KokoroTTS.af_alloy" in voices
     assert "Telnyx.KokoroTTS.am_adam" in voices
 
