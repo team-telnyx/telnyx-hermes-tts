@@ -36,12 +36,21 @@ def test_provider_constants():
 
 def test_fallback_voices_contain_expected_entries():
     voices = _assigned_constant("TELNYX_FALLBACK_VOICES")
+    assert len(voices) == 12
     assert voices[0] == "Telnyx.NaturalHD.astra"
+    # NaturalHD entries
     assert "Telnyx.NaturalHD.luna" in voices
     assert "Telnyx.NaturalHD.orion" in voices
+    assert "Telnyx.NaturalHD.celeste" in voices
+    assert "Telnyx.NaturalHD.bond" in voices
     assert "Telnyx.NaturalHD.andromeda" in voices
+    assert "Telnyx.NaturalHD.estelle" in voices
+    assert "Telnyx.NaturalHD.baldur" in voices
+    # KokoroTTS entries
     assert "Telnyx.KokoroTTS.af_alloy" in voices
+    assert "Telnyx.KokoroTTS.af_bella" in voices
     assert "Telnyx.KokoroTTS.am_adam" in voices
+    assert "Telnyx.KokoroTTS.am_michael" in voices
 
 
 def test_voice_families_declared():

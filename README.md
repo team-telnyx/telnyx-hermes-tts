@@ -186,7 +186,7 @@ The Telnyx TTS API uses a WebSocket-based streaming protocol:
 ```text
 Client                                 Telnyx TTS
   │                                        │
-  │── wss://...speech?voice=NaturalHD.astra──▶│
+  │── wss://...speech?voice=Telnyx.NaturalHD.astra─▶│
   │   Authorization: Bearer <key>          │
   │                                        │
   │── {"text": " "}  (init frame) ────────▶│
