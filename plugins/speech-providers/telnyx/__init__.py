@@ -4,7 +4,11 @@ Registers ``telnyx-tts`` as a first-class speech provider using the
 Telnyx WebSocket-based Text-to-Speech API.  Carrier-grade latency,
 NaturalHD + KokoroTTS voice families, ~10x cheaper than ElevenLabs.
 
-Protocol (wss://api.telnyx.com/v2/text-to-speech/speech):
+WebSocket endpoint:
+  ``wss://api.telnyx.com/v2/text-to-speech/speech``
+  Override with the ``TELNYX_TTS_BASE_URL`` env var.
+
+Protocol:
   1. Connect with ``Authorization: Bearer <TELNYX_API_KEY>``
   2. Send init frame:  ``{"text": " "}``
   3. Send text frame:  ``{"text": "<content>"}``
@@ -23,15 +27,18 @@ except ModuleNotFoundError as _err:
 from providers import register_speech_provider
 from providers.base import SpeechProviderProfile
 
+import os
+
 # ── Constants ─────────────────────────────────────────────────────────
 
-TELNYX_TTS_BASE_URL = "wss://api.telnyx.com/v2/text-to-speech"
-TELNYX_TTS_REST_BASE_URL = "https://api.telnyx.com"
+TELNYX_TTS_DEFAULT_BASE_URL = "wss://api.telnyx.com/v2/text-to-speech/speech"
+TELNYX_TTS_BASE_URL = os.environ.get("TELNYX_TTS_BASE_URL", TELNYX_TTS_DEFAULT_BASE_URL)
 TELNYX_DEFAULT_VOICE = "Telnyx.NaturalHD.astra"
 
 # Voice families available on Telnyx TTS.  The full catalog (950+ voices)
-# is fetched live from ``GET /v2/text-to-speech/voices`` when credentials
-# are present.
+# can be fetched from ``GET /v2/text-to-speech/voices`` with a valid
+# TELNYX_API_KEY.  Hermes may fetch this catalog at runtime depending
+# on the speech-provider contract.
 TELNYX_TTS_VOICE_FAMILIES = (
     "Telnyx.NaturalHD",
     "Telnyx.Natural",
@@ -41,8 +48,7 @@ TELNYX_TTS_VOICE_FAMILIES = (
     "Telnyx.LibriTTS",
 )
 
-# Curated default/popular voices.  Used as a fallback when the live
-# ``/v2/text-to-speech/voices`` endpoint is unreachable.
+# Curated default/popular voices for offline discovery and fallback.
 TELNYX_FALLBACK_VOICES = (
     # NaturalHD — premium, refined prosody
     "Telnyx.NaturalHD.astra",

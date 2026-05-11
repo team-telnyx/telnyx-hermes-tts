@@ -3,7 +3,7 @@ name = "telnyx-hermes-tts"
 version = "0.1.0"
 description = "Telnyx TTS speech-provider plugin for Hermes Agent"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Telnyx" }]
 keywords = ["hermes", "telnyx", "tts", "text-to-speech", "speech-provider"]

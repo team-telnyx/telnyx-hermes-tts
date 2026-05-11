@@ -61,7 +61,7 @@ def test_plugin_import_registers_telnyx_tts_provider(monkeypatch):
     assert profile.aliases == ("telnyx-speech", "telnyx-voice")
 
     # API configuration
-    assert profile.base_url == "wss://api.telnyx.com/v2/text-to-speech"
+    assert profile.base_url == "wss://api.telnyx.com/v2/text-to-speech/speech"
     assert profile.auth_type == "api_key"
     assert profile.env_vars == ("TELNYX_API_KEY", "TELNYX_TTS_BASE_URL")
     assert profile.default_headers == {"User-Agent": "HermesAgent/0.0-test"}

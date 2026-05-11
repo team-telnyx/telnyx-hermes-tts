@@ -5,6 +5,7 @@ Native Telnyx Text-to-Speech speech-provider plugin for Hermes Agent. It registe
 ## Provider
 
 - Provider ID: `telnyx-tts`
+- Plugin manifest name: `telnyx-tts`
 - Aliases: `telnyx-speech`, `telnyx-voice`
 - WebSocket URL: `wss://api.telnyx.com/v2/text-to-speech/speech`
 - Voice catalog URL: `https://api.telnyx.com/v2/text-to-speech/voices`
@@ -14,15 +15,15 @@ Native Telnyx Text-to-Speech speech-provider plugin for Hermes Agent. It registe
 
 ## Prerequisites
 
-- Hermes Agent with speech-provider plugin support installed and available on your `PATH` as `hermes`.
-- Python 3.10+ for local development/tests in this repository.
-- A Telnyx API key with access to Telnyx AI TTS.
+- **Hermes Agent** with speech-provider plugin support installed and available on your `PATH` as `hermes`. See [Hermes Agent on GitHub](https://github.com/team-telnyx/telapps-hermes) for installation instructions.
+- **Python 3.9+** for local development/tests in this repository.
+- A **Telnyx API key** with access to Telnyx AI TTS.
 
 If `hermes --help` fails, install Hermes Agent first, then return to these steps. This repository only contains the Telnyx TTS provider plugin; it does not install Hermes itself.
 
 ## Install
 
-This is a copy-only Hermes plugin. `pip install .` is **not required** for normal use.
+This is a copy-only Hermes plugin. `pip install .` is **not required** for normal use — it only installs package metadata, not the plugin itself. The plugin must be copied into the Hermes plugin directory.
 
 From the repository root, copy the bundled speech-provider plugin into Hermes' plugin directory:
 
@@ -41,7 +42,7 @@ export TELNYX_API_KEY="KEY..."
 Optional: point Hermes at a non-production Telnyx-compatible TTS endpoint:
 
 ```bash
-export TELNYX_TTS_BASE_URL="wss://api.telnyx.com/v2/text-to-speech"
+export TELNYX_TTS_BASE_URL="wss://your-proxy.example.com/v2/text-to-speech/speech"
 ```
 
 ## Verify installation without credentials
@@ -108,13 +109,20 @@ hermes tts --provider telnyx-voice --voice Telnyx.KokoroTTS.af_alloy "Budget-fri
 | `Telnyx.KokoroTTS.am_adam` | KokoroTTS | Male, budget |
 | `Telnyx.KokoroTTS.am_michael` | KokoroTTS | Male alternative |
 
-The full catalog (950+ voices) is fetched live from `GET /v2/text-to-speech/voices` when `TELNYX_API_KEY` is set.
+To browse the full voice catalog (950+ voices), query the Telnyx TTS voices endpoint:
+
+```bash
+curl -s https://api.telnyx.com/v2/text-to-speech/voices \
+  -H "Authorization: Bearer $TELNYX_API_KEY" | jq '.voices[].id'
+```
+
+This plugin declares 12 curated fallback voices for offline discovery. Hermes may fetch the full catalog at runtime depending on the speech-provider contract.
 
 ## Troubleshooting
 
 ### `hermes: command not found`
 
-Hermes Agent is not installed or is not on your `PATH`. Install Hermes first, then re-run `hermes --help`.
+Hermes Agent is not installed or is not on your `PATH`. See [Hermes Agent on GitHub](https://github.com/team-telnyx/telapps-hermes) for installation.
 
 ### Provider is not found by Hermes
 
@@ -145,7 +153,7 @@ Create or rotate keys in the [Telnyx Mission Control Portal](https://portal.teln
 
 ### Python version errors during development
 
-This repository requires Python 3.10+ for local test environments. If your system `python3` is older:
+This repository supports Python 3.9+ for local test environments. If your system `python3` is older:
 
 ```bash
 python3.10 -m venv .venv
@@ -165,9 +173,11 @@ python -m pytest -q
 
 The tests include:
 
-- Static manifest/provider shape checks.
-- A runtime import smoke test using stubbed Hermes provider APIs, so provider registration is validated even when Hermes is not installed in the test environment.
-- Env-gated live tests that validate the voice catalog against the real Telnyx TTS API (requires `TELNYX_API_KEY`).
+- **Static tests** — manifest shape, provider constants, voice families, and provider profile shape validation via AST parsing. No imports, no Hermes required.
+- **Runtime smoke test** — stubs the Hermes provider API, imports the plugin, and verifies provider registration with correct name, aliases, base URL, auth type, voices, and streaming support.
+- **Env-gated live tests** — validate the voice catalog against the real Telnyx TTS API. Requires `TELNYX_API_KEY`. Skipped by default.
+
+> **Note:** These tests validate the plugin's shape, constants, and provider registration contract. End-to-end TTS synthesis testing requires a running Hermes Agent with the plugin installed.
 
 ## WebSocket TTS protocol
 
@@ -192,4 +202,4 @@ Client                                 Telnyx TTS
 ## Related
 
 - Linear: AIF-193
-- OCPlatform equivalent: AIF-122 / `team-telnyx/telnyx-openclaw-tts`
+- OpenClaw equivalent: AIF-122 / `team-telnyx/telnyx-openclaw-tts`

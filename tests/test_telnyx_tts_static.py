@@ -26,11 +26,11 @@ def _assigned_constant(name: str):
 def test_manifest_declares_speech_provider():
     text = MANIFEST.read_text(encoding="utf-8")
     assert "kind: speech-provider" in text
-    assert "name: telnyx" in text
+    assert "name: telnyx-tts" in text
 
 
 def test_provider_constants():
-    assert _assigned_constant("TELNYX_TTS_BASE_URL") == "wss://api.telnyx.com/v2/text-to-speech"
+    assert _assigned_constant("TELNYX_TTS_DEFAULT_BASE_URL") == "wss://api.telnyx.com/v2/text-to-speech/speech"
     assert _assigned_constant("TELNYX_DEFAULT_VOICE") == "Telnyx.NaturalHD.astra"
 
 
@@ -59,3 +59,37 @@ def test_provider_profile_shape_is_declared():
     assert 'default_headers={"User-Agent": f"HermesAgent/{_HERMES_VERSION}"}' in source
     assert 'output_format="mp3"' in source
     assert "supports_streaming=True" in source
+
+
+def test_base_url_override_from_env(monkeypatch):
+    """TELNYX_TTS_BASE_URL env var should override the default."""
+    import importlib.util
+    import sys
+    import types
+
+    custom_url = "wss://custom.example.com/tts"
+    monkeypatch.setenv("TELNYX_TTS_BASE_URL", custom_url)
+
+    # Stub hermes_cli and providers
+    hermes_cli = types.ModuleType("hermes_cli")
+    hermes_cli.__version__ = "0.0-test"
+    providers = types.ModuleType("providers")
+    providers.register_speech_provider = lambda p: None
+    providers_base = types.ModuleType("providers.base")
+
+    class FakeSPP:
+        def __init__(self, **kw):
+            for k, v in kw.items():
+                setattr(self, k, v)
+
+    providers_base.SpeechProviderProfile = FakeSPP
+    monkeypatch.setitem(sys.modules, "hermes_cli", hermes_cli)
+    monkeypatch.setitem(sys.modules, "providers", providers)
+    monkeypatch.setitem(sys.modules, "providers.base", providers_base)
+
+    spec = importlib.util.spec_from_file_location("telnyx_env_test", PLUGIN)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    assert mod.TELNYX_TTS_BASE_URL == custom_url
+    assert mod.telnyx_tts.base_url == custom_url

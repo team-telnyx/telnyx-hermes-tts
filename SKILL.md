@@ -4,9 +4,9 @@ Hermes speech-provider plugin for Telnyx TTS.
 
 ## Prerequisites
 
-- Hermes Agent installed and available as `hermes`.
+- Hermes Agent installed and available as `hermes`. See [Hermes Agent on GitHub](https://github.com/team-telnyx/telapps-hermes) for installation.
 - `TELNYX_API_KEY` for live Telnyx TTS requests.
-- Python 3.10+ only for local development/tests.
+- Python 3.9+ only for local development/tests.
 
 ## Install
 
@@ -24,10 +24,10 @@ cp -R plugins/speech-providers/telnyx ~/.hermes/plugins/speech-providers/telnyx
 export TELNYX_API_KEY="KEY..."
 ```
 
-Optional:
+Optional WebSocket URL override (e.g., for a proxy):
 
 ```bash
-export TELNYX_TTS_BASE_URL="wss://api.telnyx.com/v2/text-to-speech"
+export TELNYX_TTS_BASE_URL="wss://your-proxy.example.com/v2/text-to-speech/speech"
 ```
 
 ## Verify
@@ -61,8 +61,8 @@ hermes tts --provider telnyx-voice --voice Telnyx.KokoroTTS.af_alloy "Budget voi
 
 ## Troubleshooting
 
-- `hermes: command not found` → install Hermes Agent first.
+- `hermes: command not found` → install [Hermes Agent](https://github.com/team-telnyx/telapps-hermes) first.
 - Provider not found → confirm files exist under `~/.hermes/plugins/speech-providers/telnyx/`.
 - Auth failures → export a valid `TELNYX_API_KEY`.
 - WebSocket errors → check network access to `wss://api.telnyx.com`.
-- Python/package errors during development → use Python 3.10+ and run `python -m pytest -q`.
+- Python/package errors during development → use Python 3.9+ and run `python -m pytest -q`.
