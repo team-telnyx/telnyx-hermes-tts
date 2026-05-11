@@ -1,0 +1,5 @@
+name: telnyx
+kind: speech-provider
+version: 1.0.0
+description: Telnyx TTS — WebSocket streaming speech synthesis
+author: Telnyx
