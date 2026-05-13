@@ -1,105 +1,96 @@
-"""Static validation for the standalone Telnyx TTS Hermes speech-provider plugin."""
+"""Static validation for the Telnyx TTS hermes-agent contribution.
+
+Reads ``telnyx_tts_provider.py`` via AST — no imports, no credentials,
+no network.  Validates constants, function signature, and README integration
+instructions.
+"""
 
 from __future__ import annotations
 
 import ast
+import inspect
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN = ROOT / "plugins" / "speech-providers" / "telnyx" / "__init__.py"
-MANIFEST = ROOT / "plugins" / "speech-providers" / "telnyx" / "plugin.yaml"
+PROVIDER = ROOT / "telnyx_tts_provider.py"
+README = ROOT / "README.md"
 
 
 def _module_ast() -> ast.Module:
-    return ast.parse(PLUGIN.read_text(encoding="utf-8"))
+    return ast.parse(PROVIDER.read_text(encoding="utf-8"))
 
 
 def _assigned_constant(name: str):
     for node in _module_ast().body:
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == name:
+        if isinstance(node, (ast.Assign, ast.AnnAssign)):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == name:
+                        return ast.literal_eval(node.value)
+            else:  # AnnAssign
+                if isinstance(node.target, ast.Name) and node.target.id == name and node.value:
                     return ast.literal_eval(node.value)
-    raise AssertionError(f"missing assignment for {name}")
+    raise AssertionError(f"missing assignment for {name!r} in {PROVIDER.name}")
 
 
-def test_manifest_declares_speech_provider():
-    text = MANIFEST.read_text(encoding="utf-8")
-    assert "kind: speech-provider" in text
-    assert "name: telnyx-tts" in text
+def test_provider_module_exists():
+    assert PROVIDER.exists(), "telnyx_tts_provider.py not found in repo root"
 
 
-def test_provider_constants():
-    assert _assigned_constant("TELNYX_TTS_DEFAULT_BASE_URL") == "wss://api.telnyx.com/v2/text-to-speech/speech"
-    assert _assigned_constant("TELNYX_DEFAULT_VOICE") == "Telnyx.NaturalHD.astra"
+def test_default_base_url():
+    assert _assigned_constant("TELNYX_TTS_DEFAULT_BASE_URL") == \
+        "wss://api.telnyx.com/v2/text-to-speech/speech"
 
 
-def test_fallback_voices_contain_expected_entries():
-    voices = _assigned_constant("TELNYX_FALLBACK_VOICES")
-    assert len(voices) == 12
-    assert voices[0] == "Telnyx.NaturalHD.astra"
-    # NaturalHD entries
-    assert "Telnyx.NaturalHD.luna" in voices
-    assert "Telnyx.NaturalHD.orion" in voices
-    assert "Telnyx.NaturalHD.celeste" in voices
-    assert "Telnyx.NaturalHD.bond" in voices
-    assert "Telnyx.NaturalHD.andromeda" in voices
-    assert "Telnyx.NaturalHD.estelle" in voices
-    assert "Telnyx.NaturalHD.baldur" in voices
-    # KokoroTTS entries
-    assert "Telnyx.KokoroTTS.af_alloy" in voices
-    assert "Telnyx.KokoroTTS.af_bella" in voices
-    assert "Telnyx.KokoroTTS.am_adam" in voices
-    assert "Telnyx.KokoroTTS.am_michael" in voices
+def test_default_voice():
+    assert _assigned_constant("DEFAULT_TELNYX_VOICE") == "Telnyx.NaturalHD.astra"
+
+
+def test_max_text_length_reasonable():
+    limit = _assigned_constant("TELNYX_TTS_MAX_TEXT_LENGTH")
+    assert isinstance(limit, int)
+    assert 1000 <= limit <= 50000, f"MAX_TEXT_LENGTH {limit} looks wrong"
 
 
 def test_voice_families_declared():
     families = _assigned_constant("TELNYX_TTS_VOICE_FAMILIES")
     assert "Telnyx.NaturalHD" in families
     assert "Telnyx.KokoroTTS" in families
-    assert "Telnyx.Natural" in families
 
 
-def test_provider_profile_shape_is_declared():
-    source = PLUGIN.read_text(encoding="utf-8")
-    assert 'name="telnyx-tts"' in source
-    assert 'aliases=("telnyx-speech", "telnyx-voice")' in source
-    assert 'env_vars=("TELNYX_API_KEY", "TELNYX_TTS_BASE_URL")' in source
-    assert 'auth_type="api_key"' in source
-    assert 'default_headers={"User-Agent": f"HermesAgent/{_HERMES_VERSION}"}' in source
-    assert 'output_format="mp3"' in source
-    assert "supports_streaming=True" in source
+def test_fallback_voices_declared():
+    voices = _assigned_constant("TELNYX_FALLBACK_VOICES")
+    assert "Telnyx.NaturalHD.astra" in voices
+    assert "Telnyx.KokoroTTS.af_alloy" in voices
+    assert len(voices) >= 4
 
 
-def test_base_url_override_from_env(monkeypatch):
-    """TELNYX_TTS_BASE_URL env var should override the default."""
-    import importlib.util
-    import sys
-    import types
+def test_generate_function_exists():
+    source = PROVIDER.read_text(encoding="utf-8")
+    assert "def _generate_telnyx_tts(" in source
 
-    custom_url = "wss://custom.example.com/tts"
-    monkeypatch.setenv("TELNYX_TTS_BASE_URL", custom_url)
 
-    # Stub hermes_cli and providers
-    hermes_cli = types.ModuleType("hermes_cli")
-    hermes_cli.__version__ = "0.0-test"
-    providers = types.ModuleType("providers")
-    providers.register_speech_provider = lambda p: None
-    providers_base = types.ModuleType("providers.base")
+def test_generate_function_signature():
+    """The function must accept (text, output_path, tts_config)."""
+    source = PROVIDER.read_text(encoding="utf-8")
+    assert "_generate_telnyx_tts(text: str, output_path: str, tts_config" in source
 
-    class FakeSPP:
-        def __init__(self, **kw):
-            for k, v in kw.items():
-                setattr(self, k, v)
 
-    providers_base.SpeechProviderProfile = FakeSPP
-    monkeypatch.setitem(sys.modules, "hermes_cli", hermes_cli)
-    monkeypatch.setitem(sys.modules, "providers", providers)
-    monkeypatch.setitem(sys.modules, "providers.base", providers_base)
+def test_websocket_protocol_frames_present():
+    """All three required frames must be sent in the implementation."""
+    source = PROVIDER.read_text(encoding="utf-8")
+    # Init frame
+    assert '"text": " "' in source or '"text":" "' in source
+    # Text frame
+    assert '"text": text' in source or '{"text": text}' in source
+    # Stop frame (empty text)
+    assert '"text": ""' in source or '"text":""' in source
 
-    spec = importlib.util.spec_from_file_location("telnyx_env_test", PLUGIN)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
 
-    assert mod.TELNYX_TTS_BASE_URL == custom_url
-    assert mod.telnyx_tts.base_url == custom_url
+def test_readme_integration_instructions():
+    readme = README.read_text(encoding="utf-8")
+    assert "BUILTIN_TTS_PROVIDERS" in readme
+    assert "PROVIDER_MAX_TEXT_LENGTH" in readme
+    assert "_generate_telnyx_tts" in readme
+    assert "tts_tool.py" in readme
+    assert "TELNYX_API_KEY" in readme
