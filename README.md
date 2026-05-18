@@ -1,7 +1,7 @@
 # Telnyx TTS — Hermes Agent Contribution
 
 This repository contains the Telnyx Text-to-Speech provider implementation for
-[Hermes Agent](https://github.com/team-telnyx/hermes-agent).
+[Hermes Agent](https://github.com/NousResearch/hermes-agent).
 
 It is **not** a standalone plugin. Hermes handles TTS through built-in providers
 dispatched in `tools/tts_tool.py`. This repo contains the Telnyx provider
@@ -128,4 +128,4 @@ AIF-193
 
 - [Telnyx TTS API docs](https://developers.telnyx.com/docs/voice/programmable-voice/tts)
 - [Telnyx API keys](https://portal.telnyx.com/#/app/api-keys)
-- [hermes-agent tts_tool.py](https://github.com/team-telnyx/hermes-agent/blob/main/tools/tts_tool.py)
+- [hermes-agent tts_tool.py](https://github.com/NousResearch/hermes-agent/blob/main/tools/tts_tool.py)

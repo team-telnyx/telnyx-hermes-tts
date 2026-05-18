@@ -1,68 +1,72 @@
+---
+name: telnyx-hermes-tts
+description: Telnyx TTS provider contribution for Hermes Agent — integrates into tools/tts_tool.py.
+metadata: {"clawdbot":{"emoji":"🔊","requires":{"env":["TELNYX_API_KEY"]},"primaryEnv":"TELNYX_API_KEY"}}
+---
+
 # Telnyx Hermes TTS Provider
 
-Hermes speech-provider plugin for Telnyx TTS.
+Use this skill when integrating or validating the Telnyx Text-to-Speech provider for Hermes.
 
-## Prerequisites
+## Architecture
 
-- Hermes Agent installed and available as `hermes`. See [Hermes Agent on GitHub](https://github.com/team-telnyx/telapps-hermes) for installation.
-- `TELNYX_API_KEY` for live Telnyx TTS requests.
-- Python 3.9+ only for local development/tests.
+This is **not** a standalone plugin. Hermes handles TTS through built-in
+providers dispatched in `tools/tts_tool.py`. This repo contains the Telnyx
+provider function and tests, ready to be contributed upstream.
 
-## Install
+## Provider details
 
-This is a copy-only Hermes plugin; `pip install .` is not required for normal use.
+| Field | Value |
+|-------|-------|
+| Provider ID | `telnyx` |
+| WebSocket endpoint | `wss://api.telnyx.com/v2/text-to-speech/speech` |
+| Default voice | `Telnyx.NaturalHD.astra` |
+| Output format | MP3 |
+| Auth | `TELNYX_API_KEY` (Bearer) |
+| Endpoint override | `TELNYX_TTS_BASE_URL` env var |
 
-```bash
-mkdir -p ~/.hermes/plugins/speech-providers
-rm -rf ~/.hermes/plugins/speech-providers/telnyx
-cp -R plugins/speech-providers/telnyx ~/.hermes/plugins/speech-providers/telnyx
-```
+## Integration
+
+See `README.md` for step-by-step instructions on adding the Telnyx TTS provider
+to `tools/tts_tool.py` in hermes-agent. Requires adding `websockets` as a
+dependency.
 
 ## Configure
 
 ```bash
-export TELNYX_API_KEY="KEY..."
+export TELNYX_API_KEY="***"
 ```
 
-Optional WebSocket URL override (e.g., for a proxy):
+Optional WebSocket URL override:
 
 ```bash
 export TELNYX_TTS_BASE_URL="wss://your-proxy.example.com/v2/text-to-speech/speech"
 ```
 
-## Verify
+## Available voices
+
+| Family | Example voices |
+|--------|---------------|
+| `Telnyx.NaturalHD` | `astra`, `luna`, `orion`, `celeste`, `bond`, `andromeda` |
+| `Telnyx.KokoroTTS` | `af_alloy`, `af_bella`, `am_adam`, `am_michael` |
+| `Telnyx.Natural` | (see live catalog) |
+| `Telnyx.Ultra` | (see live catalog) |
+
+Full catalog: `GET /v2/text-to-speech/voices` with a valid `TELNYX_API_KEY`.
+
+## Running tests
 
 ```bash
-hermes --help
-test -f ~/.hermes/plugins/speech-providers/telnyx/plugin.yaml
-test -f ~/.hermes/plugins/speech-providers/telnyx/__init__.py
+# No credentials needed
+python -m pytest tests/test_telnyx_tts_static.py tests/test_telnyx_tts_runtime.py -q
+
+# Live test (requires TELNYX_API_KEY)
+export TELNYX_API_KEY=***
+python -m pytest tests/test_telnyx_tts_live.py -q
 ```
 
-If supported by your Hermes version:
+## Notes
 
-```bash
-hermes providers list
-```
-
-Look for `telnyx-tts`, `telnyx-speech`, or `telnyx-voice`.
-
-## Use
-
-```bash
-hermes tts --provider telnyx-tts --voice Telnyx.NaturalHD.astra "Hello from Telnyx!"
-```
-
-Aliases also work:
-
-```bash
-hermes tts --provider telnyx-speech --voice Telnyx.NaturalHD.luna "Soft and calm."
-hermes tts --provider telnyx-voice --voice Telnyx.KokoroTTS.af_alloy "Budget voice."
-```
-
-## Troubleshooting
-
-- `hermes: command not found` → install [Hermes Agent](https://github.com/team-telnyx/telapps-hermes) first.
-- Provider not found → confirm files exist under `~/.hermes/plugins/speech-providers/telnyx/`.
-- Auth failures → export a valid `TELNYX_API_KEY`.
-- WebSocket errors → check network access to `wss://api.telnyx.com`.
-- Python/package errors during development → use Python 3.9+ and run `python -m pytest -q`.
+- No `pip install` needed — the provider function is copy-pasted into hermes-agent.
+- Local tests use a mock WebSocket; live tests hit the real Telnyx API.
+- The endpoint override (`TELNYX_TTS_BASE_URL`) is covered by tests.
