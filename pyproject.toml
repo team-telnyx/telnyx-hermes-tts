@@ -1,0 +1,15 @@
+[project]
+name = "telnyx-hermes-tts"
+version = "0.1.0"
+description = "Telnyx TTS provider contribution for Hermes Agent — integrates into tools/tts_tool.py"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Telnyx" }]
+keywords = ["hermes", "telnyx", "tts", "text-to-speech", "speech-synthesis"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
