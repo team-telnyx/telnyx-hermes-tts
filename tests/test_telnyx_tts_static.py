@@ -39,7 +39,7 @@ def test_provider_module_exists():
 
 def test_default_base_url():
     assert _assigned_constant("TELNYX_TTS_DEFAULT_BASE_URL") == \
-        "wss://api.telnyx.com/v2/text-to-speech/speech"
+        "wss://api.telnyx.com/v2/text-to-speech"
 
 
 def test_default_voice():
@@ -79,6 +79,7 @@ def test_generate_function_signature():
 def test_websocket_protocol_frames_present():
     """All three required frames must be sent in the implementation."""
     source = PROVIDER.read_text(encoding="utf-8")
+    assert "/speech?voice=" in source
     # Init frame
     assert '"text": " "' in source or '"text":" "' in source
     # Text frame

@@ -67,7 +67,7 @@ Add `websockets` to `pyproject.toml` / `requirements.txt` in hermes-agent.
 | Field | Value |
 |-------|-------|
 | Provider ID | `telnyx` |
-| WebSocket endpoint | `wss://api.telnyx.com/v2/text-to-speech/speech` |
+| WebSocket endpoint | `wss://api.telnyx.com/v2/text-to-speech/speech?voice=<voice>` |
 | Default voice | `Telnyx.NaturalHD.astra` |
 | Output format | MP3 |
 | Auth | `TELNYX_API_KEY` (Bearer) |
@@ -76,7 +76,8 @@ Add `websockets` to `pyproject.toml` / `requirements.txt` in hermes-agent.
 ## WebSocket protocol
 
 ```
-Client → Server:  {"text": " ", "voice": "<voice>", "output_format": "mp3"}  # init
+Client → Server:  connect to /speech?voice=<voice>
+Client → Server:  {"text": " "}                                                # init
 Client → Server:  {"text": "<your text>"}                                      # content
 Client → Server:  {"text": ""}                                                 # stop
 

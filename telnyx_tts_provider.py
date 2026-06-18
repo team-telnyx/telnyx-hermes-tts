@@ -27,9 +27,9 @@ See README.md for the full patch instructions.  In brief:
 
 WebSocket protocol
 ------------------
-1. Connect to ``wss://api.telnyx.com/v2/text-to-speech/speech``
+1. Connect to ``wss://api.telnyx.com/v2/text-to-speech/speech?voice=<voice>``
    with ``Authorization: Bearer <TELNYX_API_KEY>``.
-2. Send init frame:  ``{"text": " ", "voice": "<voice>", "output_format": "mp3"}``
+2. Send init frame:  ``{"text": " "}``
 3. Send text frame:  ``{"text": "<your text>"}``
 4. Send stop frame:  ``{"text": ""}``  (empty text = end-of-input signal)
 5. Receive JSON messages containing a base64-encoded ``audio`` field until
@@ -43,7 +43,7 @@ Configuration (``~/.hermes/config.yaml`` under ``tts.telnyx``)
       provider: telnyx
       telnyx:
         voice: Telnyx.NaturalHD.astra     # optional, this is the default
-        base_url: wss://...               # optional endpoint override
+        base_url: wss://...               # optional base endpoint override
 
 Environment variables
 ---------------------
@@ -63,12 +63,13 @@ import os
 import ssl
 from pathlib import Path
 from typing import Any, Dict, List
+from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
 # ── Constants (add/merge these into tools/tts_tool.py) ────────────────────
 
-TELNYX_TTS_DEFAULT_BASE_URL = "wss://api.telnyx.com/v2/text-to-speech/speech"
+TELNYX_TTS_DEFAULT_BASE_URL = "wss://api.telnyx.com/v2/text-to-speech"
 DEFAULT_TELNYX_VOICE = "Telnyx.NaturalHD.astra"
 TELNYX_TTS_MAX_TEXT_LENGTH = 5000  # conservative; no published hard cap
 
@@ -159,11 +160,12 @@ def _generate_telnyx_tts(text: str, output_path: str, tts_config: Dict[str, Any]
         str(telnyx_cfg.get("voice") or DEFAULT_TELNYX_VOICE).strip()
         or DEFAULT_TELNYX_VOICE
     )
-    ws_url = str(
+    base_url = str(
         telnyx_cfg.get("base_url")
         or _env("TELNYX_TTS_BASE_URL")
         or TELNYX_TTS_DEFAULT_BASE_URL
-    ).strip()
+    ).strip().rstrip("/")
+    ws_url = f"{base_url}/speech?voice={quote(voice, safe='')}"
 
     async def _stream() -> List[bytes]:
         ssl_ctx = ssl.create_default_context()
@@ -174,12 +176,8 @@ def _generate_telnyx_tts(text: str, output_path: str, tts_config: Dict[str, Any]
             open_timeout=15,
             close_timeout=10,
         ) as ws:
-            # 1. Init frame — declares voice and desired output format
-            await ws.send(json.dumps({
-                "text": " ",
-                "voice": voice,
-                "output_format": "mp3",
-            }))
+            # 1. Init frame — required before content frames
+            await ws.send(json.dumps({"text": " "}))
             # 2. Text frame
             await ws.send(json.dumps({"text": text}))
             # 3. Stop frame — empty text signals end-of-input
@@ -198,7 +196,14 @@ def _generate_telnyx_tts(text: str, output_path: str, tts_config: Dict[str, Any]
                     or msg.get("audio_base64")
                 )
                 if audio_b64:
-                    chunks.append(base64.b64decode(audio_b64))
+                    is_streaming_chunk = msg.get("text") is None
+                    is_completion_blob = not is_streaming_chunk
+                    if is_completion_blob and chunks:
+                        # Some voice families send a duplicate complete blob after
+                        # streaming chunks. Keep the stream and skip the duplicate.
+                        pass
+                    else:
+                        chunks.append(base64.b64decode(audio_b64))
                 if msg.get("isFinal") or msg.get("is_final"):
                     break
             return chunks
