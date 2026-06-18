@@ -16,6 +16,11 @@ function and tests ready to be contributed upstream.
 | `tests/test_telnyx_tts_runtime.py` | Full protocol test with mocked WebSocket (no credentials) |
 | `tests/test_telnyx_tts_live.py` | Live API test (requires `TELNYX_API_KEY`) |
 
+## Setup Walkthrough
+
+Watch the full setup walkthrough:
+[![Hermes TTS setup walkthrough](docs/assets/hermes-tts-setup-walkthrough.png)](docs/assets/hermes-tts-setup-walkthrough.mp4)
+
 ## Integration into hermes-agent
 
 ### 1. Add to `BUILTIN_TTS_PROVIDERS`
