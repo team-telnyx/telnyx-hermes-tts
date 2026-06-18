@@ -19,7 +19,7 @@ provider function and tests, ready to be contributed upstream.
 | Field | Value |
 |-------|-------|
 | Provider ID | `telnyx` |
-| WebSocket endpoint | `wss://api.telnyx.com/v2/text-to-speech/speech` |
+| WebSocket endpoint | `wss://api.telnyx.com/v2/text-to-speech/speech?voice=<voice>` |
 | Default voice | `Telnyx.NaturalHD.astra` |
 | Output format | MP3 |
 | Auth | `TELNYX_API_KEY` (Bearer) |

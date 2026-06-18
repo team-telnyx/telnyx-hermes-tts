@@ -112,11 +112,16 @@ def test_generate_telnyx_tts_sends_three_frames(tmp_path, monkeypatch):
         sys.path.pop(0)
 
     assert len(ws_instance.sent) == 3
+    connect_url = fake_ws_module.connect.call_args.args[0]
+    assert connect_url == (
+        "wss://api.telnyx.com/v2/text-to-speech/speech"
+        "?voice=Telnyx.NaturalHD.astra"
+    )
 
     init_frame = json.loads(ws_instance.sent[0])
     assert init_frame["text"] == " "
-    assert "voice" in init_frame
-    assert init_frame.get("output_format") == "mp3"
+    assert "voice" not in init_frame
+    assert "output_format" not in init_frame
 
     text_frame = json.loads(ws_instance.sent[1])
     assert text_frame["text"] == "Test text"
@@ -150,7 +155,12 @@ def test_generate_telnyx_tts_uses_custom_voice(tmp_path, monkeypatch):
         sys.path.pop(0)
 
     init_frame = json.loads(ws_instance.sent[0])
-    assert init_frame["voice"] == "Telnyx.KokoroTTS.af_bella"
+    assert init_frame == {"text": " "}
+    connect_url = fake_ws_module.connect.call_args.args[0]
+    assert connect_url == (
+        "wss://api.telnyx.com/v2/text-to-speech/speech"
+        "?voice=Telnyx.KokoroTTS.af_bella"
+    )
 
 
 def test_generate_telnyx_tts_no_api_key_raises(tmp_path, monkeypatch):
